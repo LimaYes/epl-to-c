@@ -28,7 +28,7 @@ public class CodeGetter {
 
         String c_code = "";
         for(String x : t.state.stack_code){
-            c_code += x + "\n";
+            c_code += x ;
         }
 
         return c_code;

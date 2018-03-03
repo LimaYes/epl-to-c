@@ -48,6 +48,53 @@ public class CodeConverter {
         }
     }
 
+    static void get_cast(lrcast lcast, Primitives.DATA_TYPE ldata_type, Primitives.DATA_TYPE rdata_type, boolean right_only) {
+
+
+        if (ldata_type == rdata_type)
+            return;
+        else if (right_only || (rdata_type.ordinal() < ldata_type.ordinal())) {
+            switch (ldata_type) {
+                case DT_UINT:
+                    lcast.rcast = "uint";
+                    break;
+                case DT_LONG:
+                    lcast.rcast = "long";
+                    break;
+                case DT_ULONG:
+                    lcast.rcast = "ulong";
+                    break;
+                case DT_FLOAT:
+                    lcast.rcast = "float";
+                    break;
+                case DT_DOUBLE:
+                    lcast.rcast = "double";
+                    break;
+            }
+            return;
+        }
+        else {
+            switch (rdata_type) {
+                case DT_UINT:
+                    lcast.lcast = "uint";
+                    break;
+                case DT_LONG:
+                    lcast.lcast = "long";
+                    break;
+                case DT_ULONG:
+                    lcast.lcast = "ulong";
+                    break;
+                case DT_FLOAT:
+                    lcast.lcast = "float";
+                    break;
+                case DT_DOUBLE:
+                    lcast.lcast = "double";
+                    break;
+            }
+            return;
+        }
+    }
+
     private static void get_node_inputs(Primitives.STATE state, Primitives.AST node, lrstr mylrstr) throws Exceptions.SyntaxErrorException {
 
         // Get Left & Right Values From Code Stack
@@ -174,20 +221,16 @@ public class CodeConverter {
 
         switch (node.type) {
             case NODE_FUNCTION:
-                str = String.format("function %s() {\n", node.svalue);
+                str = String.format("void %s() {\n", node.svalue);
                 break;
             case NODE_CALL_FUNCTION:
-                if (!strcmp(node.svalue, "verify"))
-                    str = String.format("%s(verify_pow, target)", node.svalue);
-                else
-                    str = String.format("%s()", node.svalue);
+                str = String.format("%s()", node.svalue);
                 break;
             case NODE_VERIFY_BTY:
                 str = String.format("bounty_found = (%s != 0 ? 1 : 0)", mylrstr.lstr);
                 break;
             case NODE_VERIFY_POW:
-                str = String.format("if (verify_pow == 1)\n\t\tpow_found = ExposedToRhino.check_pow(%s, m, target);" +
-                        "\n\telse\n\t\t{ pow_found = 0; ExposedToRhino.check_pow(%s, m, target); }", mylrstr.lstr, mylrstr.lstr);
+                str = String.format("if (verify_pow == 1) pow_found = check_pow(); else pow_found = 0", mylrstr.lstr, mylrstr.lstr);
                 break;
             case NODE_CONSTANT:
                 
@@ -320,8 +363,8 @@ public class CodeConverter {
                 break;
             case NODE_REPEAT:
                 
-                if (state.tabs < 1) state.tabs = 1; // todo: not, i chaged u[%lld] t u[%d] ... check for problems please
-                str = String.format("%svar loop%d = 0;\n%sfor (loop%d = 0; loop%d < (%s); loop%d++) {\n%s\tif (loop%d >= %d) break;\n%s\tu[%d] = loop%d;\n", tab[Math.max(state.tabs - 1,0)], node.token_num, tab[Math.max(state.tabs - 1,0)], node.token_num, node.token_num, mylrstr.lstr, node.token_num, tab[Math.max(state.tabs - 1,0)], node.token_num, node.ivalue, tab[Math.max(state.tabs - 1,0)], node.uvalue, node.token_num);
+                if (state.tabs < 1) state.tabs = 1;
+                str = String.format("%sint loop%d;\n%sfor (loop%d = 0; loop%d < (%s); loop%d++) {\n%s\tif (loop%d >= %d) break;\n%s\tu[%d] = loop%d;\n", tab[Math.max(state.tabs - 1,0)], node.token_num, tab[Math.max(state.tabs - 1,0)], node.token_num, node.token_num, mylrstr.lstr, node.token_num, tab[Math.max(state.tabs - 1,0)], node.token_num, node.ivalue, tab[Math.max(state.tabs - 1,0)], node.uvalue, node.token_num);
                 break;
             case NODE_BLOCK:
                 
@@ -395,13 +438,7 @@ public class CodeConverter {
                     case NODE_LSHIFT:		op = String.format("%s", "<<");	break;
                     case NODE_RSHIFT:		op = String.format("%s", ">>");	break;
                 }
-                
-                //get_cast(mylrcast, node.left.data_type, node.right.data_type, false); // TODO FIX UINT, ALSO THIS IS GONE IN COMMIT fa0611b89 ... why?
-                /*if (mylrcast.lcast != null)
-                    str = String.format("(%s)(%s) %s (%s)", mylrcast.lcast, mylrstr.lstr, op, mylrstr.rstr);
-                else if (mylrcast.rcast != null)
-                    str = String.format("(%s) %s (%s)(%s)", mylrstr.lstr, op, mylrcast.rcast, mylrstr.rstr);
-                else*/
+
                 str = String.format("(%s) %s (%s)", mylrstr.lstr, op, mylrstr.rstr);
                 break;
 
@@ -412,12 +449,13 @@ public class CodeConverter {
                     case NODE_MOD:	op = String.format("%s", "%"); break;
                 }
                 
-                //get_cast(mylrcast, node.left.data_type, node.right.data_type, true); // TODO FIX UINT
-                /*if (mylrcast.rcast!=null)
+                get_cast(mylrcast, node.left.data_type, node.right.data_type, true);
+                if (mylrcast.rcast!=null)
                     str = String.format("(((%s) != 0) ? (%s) %s (%s)(%s) : 0)", mylrstr.rstr, mylrstr.lstr, op, mylrcast.rcast, mylrstr.rstr);
-                else*/
-                str = String.format("(((%s) != 0) ? (%s) %s (%s) : 0)", mylrstr.rstr, mylrstr.lstr, op, mylrstr.rstr);
+                else
+                    str = String.format("(((%s) != 0) ? (%s) %s (%s) : 0)", mylrstr.rstr, mylrstr.lstr, op, mylrstr.rstr);
                 break;
+
 
             case NODE_ASSIGN:
             case NODE_ADD_ASSIGN:
@@ -439,12 +477,13 @@ public class CodeConverter {
                     case NODE_XOR_ASSIGN:	op = String.format("%s", "^=");	break;
                     case NODE_OR_ASSIGN:	op = String.format("%s", "|=");	break;
                 }
-                
-                //get_cast(mylrcast, node.left.data_type, node.right.data_type, true); // TODO FIX UINT
-                /*if (mylrcast.rcast!=null)
-                    str = String.format("%s %s (%s)(%s)", mylrstr.lstr, op, mylrcast.rcast, mylrstr.rstr);
-                else*/
-                str = String.format("%s %s %s", mylrstr.lstr, op, mylrstr.rstr);
+
+
+                get_cast(mylrcast, node.left.data_type, node.right.data_type, true);
+                if (mylrcast.rcast!=null)
+                    str = String.format("%s %s (%s)(%s)",  mylrstr.lstr, op, mylrcast.rcast, mylrstr.rstr);
+                else
+                    str = String.format("%s %s %s",  mylrstr.lstr, op, mylrstr.rstr);
                 break;
 
             case NODE_DIV_ASSIGN:
@@ -453,13 +492,12 @@ public class CodeConverter {
                     case NODE_DIV_ASSIGN:	op = String.format("%s", "/");	break;
                     case NODE_MOD_ASSIGN:	op = String.format("%s", "%");	break;
                 }
-                
-                // get_cast(mylrcast, node.left.data_type, node.right.data_type, true); // TODO FIX UINT
-                /*if (mylrcast.rcast != null)
-                    str = String.format("%s = (((%s) != 0) ? (%s) %s (%s)(%s) : 0)", mylrstr.lstr, mylrstr.rstr, mylrstr.lstr, op, mylrcast.rcast,
-                            mylrstr.rstr);
-                else*/
-                str = String.format("%s = (((%s) != 0) ? (%s) %s (%s) : 0)", mylrstr.lstr, mylrstr.rstr, mylrstr.lstr, op, mylrstr.rstr);
+
+                get_cast(mylrcast, node.left.data_type, node.right.data_type, true);
+                if (mylrcast.rcast!=null)
+                    str = String.format("(((%s) != 0) ? (%s) %s (%s)(%s) : 0)", mylrstr.rstr, mylrstr.lstr, op, mylrcast.rcast, mylrstr.rstr);
+                else
+                    str = String.format("(((%s) != 0) ? (%s) %s (%s) : 0)", mylrstr.rstr, mylrstr.lstr, op, mylrstr.rstr);
                 break;
 
             case NODE_INCREMENT_R:
@@ -518,31 +556,31 @@ public class CodeConverter {
                 break;
             case NODE_ABS:
                 
-                str = String.format("Math.abs(%s)", mylrstr.lstr);
+                str = String.format("abs(%s)", mylrstr.lstr);
                 break;
             case NODE_POW:
                 
-                str = String.format("Math.pow(%s, %s)", mylrstr.lstr, mylrstr.rstr);
+                str = String.format("pow(%s, %s)", mylrstr.lstr, mylrstr.rstr);
                 break;
             case NODE_SIN:
                 
-                str = String.format("Math.sin(%s)", mylrstr.lstr);
+                str = String.format("sin(%s)", mylrstr.lstr);
                 break;
             case NODE_COS:
                 
-                str = String.format("Math.cos(%s)", mylrstr.lstr);
+                str = String.format("cos(%s)", mylrstr.lstr);
                 break;
             case NODE_TAN:
                 
-                str = String.format("Math.tan(%s)", mylrstr.lstr);
+                str = String.format("tan(%s)", mylrstr.lstr);
                 break;
             case NODE_SINH:
                 
-                str = String.format("(((%s >= -1.0) && (%s <= 1.0)) ? Math.sinh( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr, mylrstr.lstr);
+                str = String.format("(((%s >= -1.0) && (%s <= 1.0)) ? sinh( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr, mylrstr.lstr);
                 break;
             case NODE_COSH:
                 
-                str = String.format("(((%s >= -1.0) && (%s <= 1.0)) ? Math.cosh( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr, mylrstr.lstr);
+                str = String.format("(((%s >= -1.0) && (%s <= 1.0)) ? cosh( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr, mylrstr.lstr);
                 break;
             case NODE_TANH:
                 
@@ -550,54 +588,51 @@ public class CodeConverter {
                 break;
             case NODE_ASIN:
                 
-                str = String.format("(((%s >= -1.0) && (%s <= 1.0)) ? Math.asin( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr, mylrstr.lstr);
+                str = String.format("(((%s >= -1.0) && (%s <= 1.0)) ? asin( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr, mylrstr.lstr);
                 break;
             case NODE_ACOS:
                 
-                str = String.format("(((%s >= -1.0) && (%s <= 1.0)) ? Math.acos( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr, mylrstr.lstr);
+                str = String.format("(((%s >= -1.0) && (%s <= 1.0)) ? acos( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr, mylrstr.lstr);
                 break;
             case NODE_ATAN:
                 
-                str = String.format("Math.atan(%s)", mylrstr.lstr);
+                str = String.format("atan(%s)", mylrstr.lstr);
                 break;
             case NODE_ATAN2:
                 
-                str = String.format("((%s != 0) ? Math.atan2(%s, %s) : 0.0)", mylrstr.rstr, mylrstr.lstr, mylrstr.rstr);
+                str = String.format("((%s != 0) ? atan2(%s, %s) : 0.0)", mylrstr.rstr, mylrstr.lstr, mylrstr.rstr);
                 break;
             case NODE_EXPNT:
                 
-                str = String.format("((((%s) >= -708.0) && ((%s) <= 709.0)) ? Math.exp( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr, mylrstr.lstr);
+                str = String.format("((((%s) >= -708.0) && ((%s) <= 709.0)) ? exp( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr, mylrstr.lstr);
                 break;
             case NODE_LOG:
                 
-                str = String.format("((%s > 0) ? Math.log( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr);
+                str = String.format("((%s > 0) ? log( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr);
                 break;
             case NODE_LOG10:
                 
-                str = String.format("((%s > 0) ? Math.log10( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr);
+                str = String.format("((%s > 0) ? log10( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr);
                 break;
             case NODE_SQRT:
                 
-                str = String.format("((%s > 0) ? Math.sqrt( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr);
+                str = String.format("((%s > 0) ? sqrt( %s ) : 0.0)", mylrstr.lstr, mylrstr.lstr);
                 break;
             case NODE_CEIL:
                 
-                str = String.format("Math.ceil(%s)", mylrstr.lstr);
+                str = String.format("ceil(%s)", mylrstr.lstr);
                 break;
             case NODE_FLOOR:
                 
-                str = String.format("Math.floor(%s)", mylrstr.lstr);
+                str = String.format("floor(%s)", mylrstr.lstr);
                 break;
             case NODE_FABS:
-                
-                str = String.format("Math.abs(%s)", mylrstr.lstr);
+                str = String.format("fabs(%s)", mylrstr.lstr);
                 break;
             case NODE_FMOD:
-                //TODO: FMOD is not supported, mod is wrong here! FIX ASAP
-                str = String.format("((%s != 0) ? (%s %% %s) : 0.0)", mylrstr.rstr, mylrstr.lstr, mylrstr.rstr);
+                str = String.format("((%s != 0) ? fmod(%s, %s) : 0.0)", mylrstr.rstr, mylrstr.lstr, mylrstr.rstr);
                 break;
             case NODE_GCD:
-                
                 str = String.format("gcd(%s, %s)", mylrstr.lstr, mylrstr.rstr);
                 break;
             default:
@@ -612,14 +647,6 @@ public class CodeConverter {
         if (node.end_stmnt && (node.type != NODE_IF) && (node.type != NODE_ELSE) && (node.type != NODE_REPEAT) && (node.type != NODE_BLOCK) && (node.type != NODE_FUNCTION)) {
             tmp = String.format("%s%s;\n", tab[Math.max(state.tabs,0)], str);
             state.stack_code.push(tmp);
-
-            /* Removed this in the context of the bracket fix
-            // Add Closing Bracket To IF / ELSE That Don't Have Them
-            if (node.parent != null && node.parent.right != null && (node.parent.right.type != NODE_BLOCK) && ((node.parent.type == NODE_IF) || (node.parent.type == NODE_ELSE))) {
-                tmp = String.format("%s}\n", tab[Math.max(state.tabs,0)], str);
-                state.stack_code.push(tmp);
-            }
-            */
         }
         else {
             state.stack_code.push(str);
@@ -634,7 +661,7 @@ public class CodeConverter {
             throw new Exceptions.SyntaxErrorException("Unable to convert NULL object.");
 
         ast_ptr = root;
-        state.tabs++;
+        state.tabs=1;
 
         while (ast_ptr != null) {
 
