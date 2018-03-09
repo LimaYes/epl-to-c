@@ -2,8 +2,7 @@ package org.xel;
 
 import java.util.Stack;
 
-import static org.xel.CodeConverter.strcmp;
-import static org.xel.Constants.*;
+import static org.xel.EplToCConstants.*;
 import static org.xel.Primitives.DATA_TYPE.*;
 import static org.xel.Primitives.AST;
 import static org.xel.Primitives.EPL_TOKEN_TYPE.*;

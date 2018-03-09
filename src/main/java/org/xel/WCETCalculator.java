@@ -4,11 +4,10 @@ package org.xel;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import static org.xel.Constants.MAX_AST_DEPTH;
-import static org.xel.Constants.REPEAT_STACK_SIZE;
+import static org.xel.EplToCConstants.MAX_AST_DEPTH;
+import static org.xel.EplToCConstants.REPEAT_STACK_SIZE;
 import static org.xel.Primitives.EXP_TYPE.EXP_FUNCTION;
 import static org.xel.Primitives.NODE_TYPE.*;
-import static org.xel.Constants.REPEAT_STACK_SIZE;
 import static org.xel.Primitives.NODE_TYPE.NODE_ELSE;
 import static org.xel.Primitives.NODE_TYPE.NODE_IF;
 
@@ -217,7 +216,7 @@ public class WCETCalculator {
             case NODE_CONTINUE:
                 return weight;
 
-            // Variable / Constants (Weight x 1)
+            // Variable / EplToCConstants (Weight x 1)
             case NODE_CONSTANT:
             case NODE_VAR_CONST:
             case NODE_VAR_EXP:

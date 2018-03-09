@@ -2,8 +2,7 @@ package org.xel;
 
 import java.util.Arrays;
 
-import static org.xel.Constants.MAX_LITERAL_SIZE;
-import static org.xel.Constants.epl_token;
+import static org.xel.EplToCConstants.*;
 import static org.xel.Primitives.DATA_TYPE.*;
 import static org.xel.Primitives.EPL_TOKEN_TYPE.*;
 import static org.xel.Primitives.EXP_TYPE.EXP_EXPRESSION;

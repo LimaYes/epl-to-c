@@ -1,6 +1,6 @@
 package org.xel;
 
-import static org.xel.Constants.VM_M_ARRAY_SIZE;
+import static org.xel.EplToCConstants.VM_M_ARRAY_SIZE;
 import static org.xel.Primitives.NODE_TYPE.*;
 
 /******************************************************************************

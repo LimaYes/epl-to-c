@@ -19,7 +19,7 @@ import static org.xel.Primitives.EXP_TYPE.*;
  * Removal or modification of this copyright notice is prohibited.            *
  *                                                                            *
  ******************************************************************************/
-public class Constants {
+public class EplToCConstants {
 
     public static final int MAX_LITERAL_SIZE = 100;			// Maximum Length Of Literal In ElasticPL
     public static final int TOKEN_LIST_SIZE = 4096;			// Maximum Number Of Tokens In ElasticPL Job - TODO: Finalize Size
