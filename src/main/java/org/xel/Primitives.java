@@ -304,7 +304,7 @@ public class Primitives {
         public int ast_vm_doubles;
 
         // Number Of Unsigned Ints To Store Per Interation / Import & Export Index
-        int ast_submit_sz;
+        public int ast_submit_sz;
         int ast_submit_idx;
 
         // Index Value Of Main & Verify Functions In AST Array
