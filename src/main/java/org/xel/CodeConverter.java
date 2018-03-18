@@ -230,7 +230,7 @@ public class CodeConverter {
                 str = String.format("bounty_found = (%s != 0 ? 1 : 0)", mylrstr.lstr);
                 break;
             case NODE_VERIFY_POW:
-                str = String.format("if (verify_pow == 1) pow_found = check_pow(); else pow_found = 0", mylrstr.lstr, mylrstr.lstr);
+                str = String.format("pow_found = check_pow(%s)", mylrstr.lstr);
                 break;
             case NODE_CONSTANT:
                 

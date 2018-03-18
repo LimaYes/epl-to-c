@@ -38,7 +38,7 @@ public class CodeGetter {
         // c_code += "uint m[12];\n"; will be pulled in by pull the rest
         // c_code += "uint s[" + t.state.ast_submit_sz + "];\n";  will be pulled in by pull the rest
         // so will target, bounty_found and pow_found! In the end, pow_hash will be created as well post-run
-        c_code += "int temp = pull_the_rest();\n\n";
+        c_code += "pull_the_rest();\n\n";
 
 
         for(String x : t.state.stack_code){
