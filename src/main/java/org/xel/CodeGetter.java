@@ -35,15 +35,17 @@ public class CodeGetter {
         c_code += "float f[" + t.state.ast_vm_floats + "];\n";
         c_code += "long l[" + t.state.ast_vm_longs + "];\n";
         c_code += "ulong ul[" + t.state.ast_vm_ulongs + "];\n";
-        // c_code += "uint m[12];\n"; will be pulled in by pull the rest
-        // c_code += "uint s[" + t.state.ast_submit_sz + "];\n";  will be pulled in by pull the rest
-        // so will target, bounty_found and pow_found! In the end, pow_hash will be created as well post-run
-        c_code += "pull_the_rest();\n\n";
+        c_code += "int bounty_found = 0;\n";
+        c_code += "int pow_found = 0;\n";
 
 
         for(String x : t.state.stack_code){
             c_code += x ;
         }
+
+        c_code += "void main_proxy() { pull_the_rest(); main(); }\n";
+        c_code += "void verify_proxy() { pull_the_rest(); verify(); }\n\n";
+
 
         return c_code;
     }
