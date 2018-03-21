@@ -35,16 +35,17 @@ public class CodeGetter {
         c_code += "float f[" + t.state.ast_vm_floats + "];\n";
         c_code += "long l[" + t.state.ast_vm_longs + "];\n";
         c_code += "ulong ul[" + t.state.ast_vm_ulongs + "];\n";
-        c_code += "int bounty_found = 0;\n";
-        c_code += "int pow_found = 0;\n";
+        c_code += "uint m[" + 12 + "];\n";
+        c_code += "uint s[" + (t.state.ast_submit_sz) + "];\n";
+        c_code += "uint r[2];\n";
 
 
         for(String x : t.state.stack_code){
             c_code += x ;
         }
 
-        c_code += "void main_proxy() { pull_the_rest(); main(); }\n";
-        c_code += "void verify_proxy() { pull_the_rest(); verify(); }\n\n";
+        c_code += "void main_proxy() { pull_the_rest(); main(); sync_r();}\n";
+        c_code += "void verify_proxy() { pull_the_rest(); verify(); sync_r();}\n\n";
 
 
         return c_code;
