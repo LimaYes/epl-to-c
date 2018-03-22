@@ -1813,7 +1813,7 @@ public class ASTBuilder {
     private static void validate_function_calls(Primitives.STATE state) throws Exceptions.SyntaxErrorException {
         int i, j;
         boolean downward = true;
-        dump_vm_ast(state);
+        //dump_vm_ast(state); DUMPING
 
         AST root = null;
         AST ast_ptr = null;
@@ -1821,7 +1821,7 @@ public class ASTBuilder {
         Stack<AST> rpt_stack = new Stack<>();
         // First Validate 'main' Then 'verify'
 
-        System.out.println(String.format("Call Function: 'main()'"));
+        //System.out.println(String.format("Call Function: 'main()'")); DUMPING
 
         for (j = 0; j < 2; j++) {
 
@@ -1871,7 +1871,7 @@ public class ASTBuilder {
                         if (ast_ptr.left != null)
                             ast_ptr = ast_ptr.left;
 
-                        System.out.println(String.format("Call Function: '%s()'", ast_ptr.svalue));
+                        //System.out.println(String.format("Call Function: '%s()'", ast_ptr.svalue)); DUMPING
 
 
                         // Get AST Index For The Function
@@ -1953,7 +1953,7 @@ public class ASTBuilder {
                     if (ast_ptr.parent.type == NODE_FUNCTION) {
 
                         ast_ptr = call_stack.pop();
-                        System.out.println(String.format("Return From:   '%s()'", ast_ptr.svalue));
+                        //System.out.println(String.format("Return From:   '%s()'", ast_ptr.svalue)); DUMPING
                     } else {
                         // Check If We Need To Navigate Back Down A Right Branch
                         if ((ast_ptr == ast_ptr.parent.left) && (ast_ptr.parent.right != null)) {
