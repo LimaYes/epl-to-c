@@ -1,5 +1,8 @@
 package org.xel;
 
+import com.realitysink.cover.ComputationResult;
+import com.realitysink.cover.CoverMain;
+
 import static org.xel.EplToCConstants.MAX_SOURCE_SIZE;
 
 public class CodeGetter {
@@ -39,13 +42,18 @@ public class CodeGetter {
         c_code += "uint s[" + (t.state.ast_submit_sz) + "];\n";
         c_code += "uint r[2];\n";
 
+        // TODO: Ugly hook, adds circular dependency between java-c and epl-c
+        ComputationResult hook = CoverMain.getComputationResult();
+        if(hook != null){
+            hook.storage_size = t.state.ast_submit_sz;
+        }
 
         for(String x : t.state.stack_code){
             c_code += x ;
         }
 
-        c_code += "void main_proxy() { pull_the_rest(); main(); sync_r();}\n";
-        c_code += "void verify_proxy() { pull_the_rest(); verify(); sync_r();}\n\n";
+        c_code += "void main_proxy() { pull_the_rest(); main(); sync_r(); dump_vars();}\n";
+        c_code += "void verify_proxy() { pull_the_rest(); verify(); sync_r();dump_vars();}\n\n";
 
 
         return c_code;
